@@ -25,20 +25,17 @@ exports.getProviders = async (req, res, next) => {
   );
 
   //filtering by user role
-  let matchCondition = null;
-  if (req.user) {
-    if (req.user.role !== "admin") {
-      matchCondition = { user: req.user.id };
-    }
-  } else {
-    matchCondition = { _id: null };
+  let populateOptions = {
+    path: "bookings",
+  };
+  if (!req.user) {
+    populateOptions.match = { _id: null };
+  } else if (req.user.role !== "admin") {
+    populateOptions.match = { user: req.user.id };
   }
 
   //finding resource
-  query = Provider.find(JSON.parse(queryStr)).populate({
-    path: "bookings",
-    match: matchCondition,
-  });
+  query = Provider.find(JSON.parse(queryStr)).populate(populateOptions);
 
   //Select Fields
   if (req.query.select) {
