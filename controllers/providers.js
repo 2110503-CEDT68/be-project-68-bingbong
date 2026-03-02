@@ -24,18 +24,8 @@ exports.getProviders = async (req, res, next) => {
     (match) => `$${match}`,
   );
 
-  //filtering by user role
-  let populateOptions = {
-    path: "bookings",
-  };
-  if (!req.user) {
-    populateOptions.match = { _id: null };
-  } else if (req.user.role !== "admin") {
-    populateOptions.match = { user: req.user.id };
-  }
-
   //finding resource
-  query = Provider.find(JSON.parse(queryStr)).populate(populateOptions);
+  query = Provider.find(JSON.parse(queryStr));
 
   //Select Fields
   if (req.query.select) {
