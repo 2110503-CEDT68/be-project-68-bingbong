@@ -1,5 +1,5 @@
 const Booking = require('../models/Booking');
-const Hospital = require('../models/Provider');
+const Provider = require('../models/Provider');
 
 //@desc Get all bookings
 //@route GET /api/v1/bookings
@@ -9,20 +9,29 @@ exports.getBookings = async (req, res, next) => {
     //General users can see only their bookings!
     if(req.user && req.user.role !== 'admin'){
         query = Booking.find({user: req.user.id}).populate({
-            path: 'hospital',
-            select: 'name province tel'
+            path: 'provider',
+            select: 'name address tel'
+        }).populate({
+            path: 'car',
+            select: 'make model year'
         });
         }else{ //If you are an admin, you can see all bookings
-            if(req.params.hospitalId){
-                console.log(req.params.hospitalId);
-                query = Booking.find({hospital: req.params.hospitalId}).populate({
-            path: 'hospital',
-            select: 'name province tel'
+            if(req.params.providerId){
+                console.log(req.params.providerId);
+                query = Booking.find({provider: req.params.providerId}).populate({
+            path: 'provider',
+            select: 'name address tel'
+        }).populate({
+            path: 'car',
+            select: 'make model year'
         });
             }else{
                 query = Booking.find().populate({
-            path: 'hospital',
-            select: 'name province tel'
+            path: 'provider',
+            select: 'name address tel'
+        }).populate({
+            path: 'car',
+            select: 'make model year'
         });
             }
     }
@@ -46,8 +55,11 @@ exports.getBookings = async (req, res, next) => {
 exports.getBooking = async (req, res, next) => {
     try{
         const booking = await Booking.findById(req.params.id).populate({
-            path: 'hospital',
-            select: 'name province tel'
+            path: 'provider',
+            select: 'name address tel'
+        }).populate({
+            path: 'car',
+            select: 'make model year'
         });
 
         if(!booking){
@@ -61,15 +73,15 @@ exports.getBooking = async (req, res, next) => {
 };
 
 //@desc Add booking
-//@route POST /api/v1/hospitals/:hospitalId/bookings
+//@route POST /api/v1/providers/:providerId/bookings
 //@access Private
 exports.addBooking = async (req, res, next) => {
     try{
-        req.body.hospital = req.params.hospitalId;
+        req.body.provider = req.params.providerId;
     
-        const hospital = await Hospital.findById(req.params.hospitalId);
-        if(!hospital){
-            return res.status(404).json({success: false, message: 'No hospital with the id of ' + req.params.hospitalId});
+        const provider = await Provider.findById(req.params.providerId);
+        if(!provider){
+            return res.status(404).json({success: false, message: 'No provider with the id of ' + req.params.providerId});
         }
 
         //add user to req.body
@@ -78,7 +90,19 @@ exports.addBooking = async (req, res, next) => {
         if(existingBooking.length >= 3){
             return res.status(400).json({success: false, message: `The user ${req.user.name} has already made 3 bookings`});
         }
+        
+        const existingCarBooked = await Booking.findOne({
+        car: req.body.car,
+        rentalDate: { $eq: req.body.rentalDate },
+        });
 
+        if (existingCarBooked) {
+            return res.status(400).json({
+            success: false,
+            message: 'This car is already booked for the selected dates'
+            });
+        }
+            
         const booking = await Booking.create(req.body);
         res.status(200).json({
             success: true,
