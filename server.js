@@ -12,7 +12,6 @@ connectDB();
 // Route files
 const providers = require('./routes/providers');
 const bookings = require('./routes/bookings');
-const cars = require('./routes/cars');
 const auth = require('./routes/auth');
 
 
@@ -25,7 +24,6 @@ app.use(cookieParser());
 //Mount routers
 app.use('/api/v1/providers',providers);
 app.use('/api/v1/bookings',bookings);
-app.use('/api/v1/cars',cars);
 app.use('/api/v1/auth',auth);
 
 const PORT = process.env.PORT || 5000;

@@ -7,35 +7,26 @@ const Provider = require('../models/Provider');
 exports.getBookings = async (req, res, next) => {
     let query;
     //General users can see only their bookings!
-    if(req.user && req.user.role !== 'admin'){
-        query = Booking.find({user: req.user.id}).populate({
+    if (req.user && req.user.role !== 'admin') {
+        query = Booking.find({ user: req.user.id }).populate({
             path: 'provider',
             select: 'name address tel'
-        }).populate({
-            path: 'car',
-            select: 'license brand model city'
-        });
-        }else{ //If you are an admin, you can see all bookings
-            if(req.params.providerId){
-                console.log(req.params.providerId);
-                query = Booking.find({provider: req.params.providerId}).populate({
-            path: 'provider',
-            select: 'name address tel'
-        }).populate({
-            path: 'car',
-            select: 'license brand model city'
-        });
-            }else{
-                query = Booking.find().populate({
-            path: 'provider',
-            select: 'name address tel'
-        }).populate({
-            path: 'car',
-            select: 'license brand model city'
-        });
-            }
+        })
+    } else { //If you are an admin, you can see all bookings
+        if (req.params.providerId) {
+            console.log(req.params.providerId);
+            query = Booking.find({ provider: req.params.providerId }).populate({
+                path: 'provider',
+                select: 'name address tel'
+            })
+        } else {
+            query = Booking.find().populate({
+                path: 'provider',
+                select: 'name address tel'
+            })
+        }
     }
-    try{
+    try {
         const bookings = await query;
 
         res.status(200).json({
@@ -43,9 +34,9 @@ exports.getBookings = async (req, res, next) => {
             count: bookings.length,
             data: bookings
         });
-    }catch(err){
+    } catch (err) {
         console.log(err);
-        res.status(500).json({success: false, message: 'Cannot find Booking'});
+        res.status(500).json({ success: false, message: 'Cannot find Booking' });
     }
 };
 
@@ -53,22 +44,19 @@ exports.getBookings = async (req, res, next) => {
 //@route GET /api/v1/bookings/:id
 //@access Public
 exports.getBooking = async (req, res, next) => {
-    try{
+    try {
         const booking = await Booking.findById(req.params.id).populate({
             path: 'provider',
             select: 'name address tel'
-        }).populate({
-            path: 'car',
-            select: 'license brand model city'
-        });
+        })
 
-        if(!booking){
-            return res.status(404).json({success: false, message: 'No booking with the id of ' + req.params.id});
+        if (!booking) {
+            return res.status(404).json({ success: false, message: 'No booking with the id of ' + req.params.id });
         }
-        res.status(200).json({success: true, data: booking});
-    }catch(err){
+        res.status(200).json({ success: true, data: booking });
+    } catch (err) {
         console.log(err);
-        res.status(500).json({success: false, message: 'Cannot find Booking'});
+        res.status(500).json({ success: false, message: 'Cannot find Booking' });
     }
 };
 
@@ -76,67 +64,55 @@ exports.getBooking = async (req, res, next) => {
 //@route POST /api/v1/providers/:providerId/bookings
 //@access Private
 exports.addBooking = async (req, res, next) => {
-    try{
+    try {
         req.body.provider = req.params.providerId;
-    
+
         const provider = await Provider.findById(req.params.providerId);
-        if(!provider){
-            return res.status(404).json({success: false, message: 'No provider with the id of ' + req.params.providerId});
+        if (!provider) {
+            return res.status(404).json({ success: false, message: 'No provider with the id of ' + req.params.providerId });
         }
 
         //add user to req.body
         req.body.user = req.user.id;
-        const existingBooking = await Booking.find({user:req.user.id});
-        if(existingBooking.length >= 3){
-            return res.status(400).json({success: false, message: `The user ${req.user.name} has already made 3 bookings`});
+        const existingBooking = await Booking.find({ user: req.user.id });
+        if (existingBooking.length >= 3) {
+            return res.status(400).json({ success: false, message: `The user ${req.user.name} has already made 3 bookings` });
         }
-        
-        const existingCarBooked = await Booking.findOne({
-        car: req.body.car,
-        rentalDate: { $eq: req.body.rentalDate },
-        });
 
-        if (existingCarBooked) {
-            return res.status(400).json({
-            success: false,
-            message: 'This car is already booked for the selected dates'
-            });
-        }
-            
         const booking = await Booking.create(req.body);
         res.status(200).json({
             success: true,
             data: booking
         });
-    }catch(err){
+    } catch (err) {
         console.log(err);
-        res.status(500).json({success: false, message: 'Cannot create Booking'});
-}
+        res.status(500).json({ success: false, message: 'Cannot create Booking' });
+    }
 }
 
 // @desc Update booking
 // @route PUT /api/v1/bookings/:id
 // @access Private
 exports.updateBooking = async (req, res, next) => {
-    try{
+    try {
         let booking = await Booking.findById(req.params.id);
-        if(!booking){
-            return res.status(404).json({success: false, message: 'No booking with the id of ' + req.params.id});
+        if (!booking) {
+            return res.status(404).json({ success: false, message: 'No booking with the id of ' + req.params.id });
         }
 
         //Make sure user is booking owner
-        if(booking.user.toString() !== req.user.id && req.user.role !== 'admin'){
-            return res.status(401).json({success: false, message: 'User not authorized to update this booking'});
+        if (booking.user.toString() !== req.user.id && req.user.role !== 'admin') {
+            return res.status(401).json({ success: false, message: 'User not authorized to update this booking' });
         }
 
         booking = await Booking.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
             runValidators: true
         });
-        res.status(200).json({success: true, data: booking});
-    }catch(err){
+        res.status(200).json({ success: true, data: booking });
+    } catch (err) {
         console.log(err);
-        res.status(500).json({success: false, message: 'Cannot update Booking'});
+        res.status(500).json({ success: false, message: 'Cannot update Booking' });
     }
 }
 
@@ -144,21 +120,21 @@ exports.updateBooking = async (req, res, next) => {
 // @route DELETE /api/v1/bookings/:id
 // @access Private
 exports.deleteBooking = async (req, res, next) => {
-    try{
+    try {
         const booking = await Booking.findById(req.params.id);
-        if(!booking){
-            return res.status(404).json({success: false, message: 'No booking with the id of ' + req.params.id});
+        if (!booking) {
+            return res.status(404).json({ success: false, message: 'No booking with the id of ' + req.params.id });
         }
 
         //Make sure user is booking owner
-        if(booking.user.toString() !== req.user.id && req.user.role !== 'admin'){
-            return res.status(401).json({success: false, message: 'User not authorized to delete this booking'});
+        if (booking.user.toString() !== req.user.id && req.user.role !== 'admin') {
+            return res.status(401).json({ success: false, message: 'User not authorized to delete this booking' });
         }
 
         await booking.deleteOne();
-        res.status(200).json({success: true, data: {}});
-    }catch(err){
+        res.status(200).json({ success: true, data: {} });
+    } catch (err) {
         console.log(err);
-        res.status(500).json({success: false, message: 'Cannot delete Booking'});
+        res.status(500).json({ success: false, message: 'Cannot delete Booking' });
     }
 }
