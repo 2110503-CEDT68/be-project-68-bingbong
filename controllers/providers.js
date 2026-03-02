@@ -1,7 +1,5 @@
 const Provider = require("../models/Provider");
-const Booking = require('../models/Booking');
-
-
+const Booking = require("../models/Booking");
 
 //@desc Get all providers
 //@route GET /api/v1/providers
@@ -13,31 +11,47 @@ exports.getProviders = async (req, res, next) => {
   const reqQuery = { ...req.query };
 
   //Fields to exclude
-  const removeFields = ['select', 'sort', 'page', 'limit'];
+  const removeFields = ["select", "sort", "page", "limit"];
 
   //Loop over removeFields and delete them from reqQuery
-  removeFields.forEach(param => delete reqQuery[param]);
+  removeFields.forEach((param) => delete reqQuery[param]);
   console.log(reqQuery);
 
   //Create query string
   let queryStr = JSON.stringify(reqQuery);
-  queryStr = queryStr.replace(/\b(gte|gt|lte|lt|in)\b/g, match => `$${match}`);
+  queryStr = queryStr.replace(
+    /\b(gte|gt|lte|lt|in)\b/g,
+    (match) => `$${match}`,
+  );
+
+  //filtering by user role
+  let matchCondition = null;
+  if (req.user) {
+    if (req.user.role !== "admin") {
+      matchCondition = { user: req.user.id };
+    }
+  } else {
+    matchCondition = { _id: null };
+  }
 
   //finding resource
-  query = Provider.find(JSON.parse(queryStr)).populate('bookings');
+  query = Provider.find(JSON.parse(queryStr)).populate({
+    path: "bookings",
+    match: matchCondition,
+  });
 
   //Select Fields
-  if(req.query.select){
-    const fields = req.query.select.split(',').join(' ');
+  if (req.query.select) {
+    const fields = req.query.select.split(",").join(" ");
     query = query.select(fields);
   }
 
   //Sort
-  if(req.query.sort){
-    const sortBy = req.query.sort.split(',').join(' ');
+  if (req.query.sort) {
+    const sortBy = req.query.sort.split(",").join(" ");
     query = query.sort(sortBy);
-  }else{
-    query = query.sort('-createdAt');
+  } else {
+    query = query.sort("-createdAt");
   }
 
   //Pagination
@@ -47,38 +61,38 @@ exports.getProviders = async (req, res, next) => {
   const endIndex = page * limit;
 
   try {
-     const total = await Provider.countDocuments();
+    const total = await Provider.countDocuments();
 
-  query = query.skip(startIndex).limit(limit);
+    query = query.skip(startIndex).limit(limit);
 
-  //Executing query
-  const providers = await query;
-  //Pagination result
-  const pagination = {};
+    //Executing query
+    const providers = await query;
+    //Pagination result
+    const pagination = {};
 
-  if(endIndex < total){
-    pagination.next = {
-      page: page + 1,
-      limit
+    if (endIndex < total) {
+      pagination.next = {
+        page: page + 1,
+        limit,
+      };
     }
-  }
 
-  if(startIndex > 0){
-    pagination.prev = {
-      page: page - 1,
-      limit
+    if (startIndex > 0) {
+      pagination.prev = {
+        page: page - 1,
+        limit,
+      };
     }
-  }
 
     res.status(200).json({
       success: true,
       count: providers.length,
       pagination,
-      data: providers
+      data: providers,
     });
   } catch (err) {
     res.status(400).json({
-      success: false
+      success: false,
     });
   }
 };
@@ -105,45 +119,47 @@ exports.createProvider = async (req, res, next) => {
   const provider = await Provider.create(req.body);
   res.status(201).json({
     success: true,
-    data: provider
+    data: provider,
   });
-  res.status(200).json({ success: true, data:provider});
+  res.status(200).json({ success: true, data: provider });
 };
 
 //@desc Update provider
 //@route PUT /api/v1/providers/:id
 //@access Private
-exports.updateProvider = async(req, res, next) => {
-  try{
+exports.updateProvider = async (req, res, next) => {
+  try {
     const provider = await Provider.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
-      runValidators: true
+      runValidators: true,
     });
-    if(!provider){
-      return res.status(400).json({success: false});
+    if (!provider) {
+      return res.status(400).json({ success: false });
     }
-    res.status(200).json({success: true, data: provider});
-  }catch(err){
-    res.status(400).json({success: false});
+    res.status(200).json({ success: true, data: provider });
+  } catch (err) {
+    res.status(400).json({ success: false });
   }
 };
 
 //@desc Delete provider
 //@route DELETE /api/v1/providers/:id
 //@access Private
-exports.deleteProvider =  async (req, res, next) => {
-  try{
+exports.deleteProvider = async (req, res, next) => {
+  try {
     const provider = await Provider.findById(req.params.id);
 
-    if(!provider){
-      return res.status(404).json({success: false, message: `Provider not found with id of ${req.params.id}`});
+    if (!provider) {
+      return res.status(404).json({
+        success: false,
+        message: `Provider not found with id of ${req.params.id}`,
+      });
     }
-    await Booking.deleteMany({provider: req.params.id});
-    await Provider.deleteOne({_id: req.params.id});
-    
-    res.status(200).json({success: true, data: {}});
-  }catch(err){
-    res.status(400).json({success: false});
-  }
+    await Booking.deleteMany({ provider: req.params.id });
+    await Provider.deleteOne({ _id: req.params.id });
 
-}
+    res.status(200).json({ success: true, data: {} });
+  } catch (err) {
+    res.status(400).json({ success: false });
+  }
+};
