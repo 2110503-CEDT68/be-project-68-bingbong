@@ -15,9 +15,6 @@ const ProviderSchema = new mongoose.Schema({
     tel: {
         type: String,
     }
-},{
-    toJSON: {virtuals: true},
-    toObject: {virtuals: true}
 });
 
 module.exports = mongoose.model('Provider', ProviderSchema);
