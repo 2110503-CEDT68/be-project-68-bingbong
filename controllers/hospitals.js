@@ -1,5 +1,5 @@
 const Hospital = require("../models/Hospital");
-const Appointment = require('../models/Appointment');
+const Booking = require('../models/Booking');
 
 
 
@@ -24,7 +24,7 @@ exports.getHospitals = async (req, res, next) => {
   queryStr = queryStr.replace(/\b(gte|gt|lte|lt|in)\b/g, match => `$${match}`);
 
   //finding resource
-  query = Hospital.find(JSON.parse(queryStr)).populate('appointments');
+  query = Hospital.find(JSON.parse(queryStr)).populate('bookings');
 
   //Select Fields
   if(req.query.select){
@@ -138,7 +138,7 @@ exports.deleteHospital =  async (req, res, next) => {
     if(!hospital){
       return res.status(404).json({success: false, message: `Hospital not found with id of ${req.params.id}`});
     }
-    await Appointment.deleteMany({hospital: req.params.id});
+    await Booking.deleteMany({hospital: req.params.id});
     await Hospital.deleteOne({_id: req.params.id});
     
     res.status(200).json({success: true, data: {}});
