@@ -10,7 +10,7 @@ dotenv.config({ path: './config/config.env' });
 connectDB();
 
 // Route files
-const hospitals = require('./routes/hospitals');
+const providers = require('./routes/providers');
 const bookings = require('./routes/bookings');
 const auth = require('./routes/auth');
 
@@ -22,7 +22,7 @@ app.use(express.json());
 //Cookie parser
 app.use(cookieParser());
 //Mount routers
-app.use('/api/v1/hospitals',hospitals);
+app.use('/api/v1/providers',providers);
 app.use('/api/v1/bookings',bookings);
 app.use('/api/v1/auth',auth);
 

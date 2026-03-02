@@ -10,9 +10,9 @@ const BookingSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-    hospital:{
+    provider:{
         type: mongoose.Schema.ObjectId,
-        ref: 'Hospital',
+        ref: 'Provider',
         required: true
     },
     createdAt: {
