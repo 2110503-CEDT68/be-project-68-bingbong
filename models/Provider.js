@@ -12,25 +12,8 @@ const ProviderSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please add an address']
     },
-    district: {
-        type: String,
-        required: [true, 'Please add a distinct']
-    },
-    province: {
-        type: String,
-        required: [true, 'Please add a province']
-    },
-    postalcode: {
-        type: String,
-        required: [true, 'Please add a postalcode'],
-        maxlength:[5, 'Postalcode can not be more than 5 digits']
-    },
     tel: {
         type: String,
-    },
-    region: {
-        type: String,
-        required: [true, 'Please add a region']
     }
 },{
     toJSON: {virtuals: true},
