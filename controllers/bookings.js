@@ -13,7 +13,7 @@ exports.getBookings = async (req, res, next) => {
             select: 'name address tel'
         }).populate({
             path: 'car',
-            select: 'make model year'
+            select: 'license brand model city'
         });
         }else{ //If you are an admin, you can see all bookings
             if(req.params.providerId){
@@ -23,7 +23,7 @@ exports.getBookings = async (req, res, next) => {
             select: 'name address tel'
         }).populate({
             path: 'car',
-            select: 'make model year'
+            select: 'license brand model city'
         });
             }else{
                 query = Booking.find().populate({
@@ -31,7 +31,7 @@ exports.getBookings = async (req, res, next) => {
             select: 'name address tel'
         }).populate({
             path: 'car',
-            select: 'make model year'
+            select: 'license brand model city'
         });
             }
     }
@@ -59,7 +59,7 @@ exports.getBooking = async (req, res, next) => {
             select: 'name address tel'
         }).populate({
             path: 'car',
-            select: 'make model year'
+            select: 'license brand model city'
         });
 
         if(!booking){
