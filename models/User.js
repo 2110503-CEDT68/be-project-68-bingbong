@@ -18,7 +18,11 @@ const UserSchema = new mongoose.Schema({
     },
     telephone: {
         type: String,
-        required: [true, 'Please add a telephone']
+        required: [true, 'Please add a telephone'],
+        match: [
+            /^\d{3}-\d{3}-\d{4}$/
+            ,"Please add a valid telephone number in the format xxx-xxx-xxxx"
+        ]
     },
     role: {
         type: String,
@@ -42,7 +46,6 @@ const UserSchema = new mongoose.Schema({
 UserSchema.pre('save', async function(next){
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
-    next();
 });
 
 UserSchema.methods.getSignedJwtToken = function(){
