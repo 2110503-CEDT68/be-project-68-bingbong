@@ -108,7 +108,6 @@ exports.createProvider = async (req, res, next) => {
     success: true,
     data: provider,
   });
-  res.status(200).json({ success: true, data: provider });
 };
 
 //@desc Update provider
