@@ -27,7 +27,7 @@
               "\r",
               "console.log(\"Token saved:\", jsonData.token);\r",
               "\r",
-              "pm.execution.setNextRequest(\"Get Booking\");"
+              "pm.execution.setNextRequest(\"ฺGet Booking\");"
             ],
             "type": "text/javascript",
             "packages": {},
