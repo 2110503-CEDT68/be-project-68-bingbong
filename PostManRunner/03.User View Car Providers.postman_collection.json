@@ -80,7 +80,7 @@
               "\r",
               "console.log(\"Token saved:\", jsonData.token);\r",
               "\r",
-              "pm.execution.setNextRequest(\"getMe\");"
+              "pm.execution.setNextRequest(\"View All Providers with Login\");"
             ],
             "type": "text/javascript",
             "packages": {},
